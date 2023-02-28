@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  # configure apache
+  apache:
+    image: apache-server:latest
+    container_name: apache-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html/
+    ports:
+      - 8000:80
+    depends_on:
+      - db
+    networks:
+      - dbNetwork
+
+  # configure mysql database
+  db:
+    image: mysql:latest
+
+    container_name: db
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "6033:3306"
+    networks:
+      - dbNetwork
+
+  # configure phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - '8080:80'
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: password
+    depends_on:
+      - db
+    networks:
+      - dbNetwork
+
+networks:
+  dbNetwork:
+volumes:
+  db_data:
